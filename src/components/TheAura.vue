@@ -99,11 +99,11 @@ defineExpose({
   reset,
 });
 
-function mouse(downEvent: MouseEvent, onDown: Function) {
+function mouseDown(downEvent: MouseEvent) {
   if (!auraCanvas.value) return;
   if (downEvent.button != 0) return;
   let pos = pointerPosition(downEvent);
-  let onMove = onDown(pos);
+  let onMove = tools[tool.value](pos);
   if (!onMove) return;
   let move = (moveEvent: MouseEvent) => {
     if (moveEvent.buttons == 0) {
@@ -118,9 +118,9 @@ function mouse(downEvent: MouseEvent, onDown: Function) {
   document.addEventListener("mousemove", move);
 }
 
-function touch(startEvent: TouchEvent, onDown: Function) {
+function touchStart(startEvent: TouchEvent) {
   let pos = pointerPosition(startEvent.touches[0]);
-  let onMove = onDown(pos);
+  let onMove = tools[tool.value](pos);
   startEvent.preventDefault();
   if (!onMove) return;
   let move = (moveEvent: TouchEvent) => {
@@ -164,10 +164,11 @@ function pointerPosition(pos: { clientX: number; clientY: number }) {
     centerDelta.x = radius * Math.cos(angle - Math.PI / 4);
     centerDelta.y = radius * Math.sin(angle - Math.PI / 4);
   }
-  return {
+  let pixelPos = {
     x: Math.floor(centerDelta.x / scale.value + picture.size / 2),
     y: Math.floor(centerDelta.y / scale.value + picture.size / 2),
   };
+  return pixelPos;
 }
 
 function getDrawnPixel(pos: Position) {
@@ -183,12 +184,12 @@ function drawPixels(pixels: { x: number; y: number }[], erase = false) {
 
 //   tools
 function draw(pos: Position) {
-  let drawn = [pos];
-  drawPixels(drawn);
+  let drawn: Position[] = [];
   function drawPixel(pos: Position) {
     drawn.push(pos);
     drawPixels(drawn);
   }
+  drawPixel(pos);
   return drawPixel;
 }
 function rectangle(start: Position) {
@@ -236,23 +237,17 @@ function fill(pos: Position) {
   drawPixels(drawn);
 }
 function erase(pos: Position) {
-  let drawn = [pos];
+  let drawn: Position[] = [];
   function erasePixel(pos: Position) {
     drawn.push(pos);
     drawPixels(drawn, true);
   }
-  drawPixels(drawn, true);
+  erasePixel(pos);
   return erasePixel;
 }
 const tools: Record<Tool, Function> = { draw, fill, rectangle, erase };
 </script>
 
 <template>
-  <canvas
-    ref="canavas"
-    :onmousedown="mouse"
-    :ontouchstart="touch"
-    style="width: 600; height: 600"
-  >
-  </canvas>
+  <canvas ref="auraCanvas" @mousedown="mouseDown"> </canvas>
 </template>
