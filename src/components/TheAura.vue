@@ -89,7 +89,14 @@ function undo() {
 function reset() {
   resetPicture();
 }
-
+const getSize = computed(() => picture.size);
+const getOrientation = computed(() => picture.orientation);
+const getColor = computed(() => color.value);
+const getGrid = computed(() => grid.value);
+function getTools() {
+  return tools;
+}
+const canUndo = computed(() => state.past.length > 0);
 defineExpose({
   pickTool,
   pickColor,
@@ -98,6 +105,12 @@ defineExpose({
   setOrientation,
   undo,
   reset,
+  getSize,
+  getOrientation,
+  getColor,
+  getGrid,
+  getTools,
+  canUndo,
 });
 
 function mouseDown(downEvent: MouseEvent) {
