@@ -8,6 +8,7 @@ type Picture = {
   size: number;
   pixels: string[];
 };
+type Position = { x: number; y: number };
 
 interface Props {
   canvasSize: number;
@@ -169,22 +170,29 @@ function pointerPosition(pos: { clientX: number; clientY: number }) {
   };
 }
 
-function pixel(x: number, y: number) {
-  return picture.pixels[x + y * AURA_MAX_SIZE];
+function getDrawnPixel(pos: Position) {
+  return picture.pixels[pos.x + pos.y * AURA_MAX_SIZE];
 }
-function drawPixels(pixels: { x: number; y: number }[]) {
+function drawPixels(pixels: { x: number; y: number }[], erase = false) {
+  picture.pixels = state.picture.pixels;
   for (let { x, y } of pixels) {
-    picture.pixels[x + y * AURA_MAX_SIZE] = color.value;
+    picture.pixels[x + y * AURA_MAX_SIZE] = erase ? "" : color.value;
   }
   return;
 }
 
 //   tools
-function draw(pos: { x: number; y: number }) {
-  drawPixels([pos]);
+function draw(pos: Position) {
+  let drawn = [pos];
+  drawPixels(drawn);
+  function drawPixel(pos: Position) {
+    drawn.push(pos);
+    drawPixels(drawn);
+  }
+  return drawPixel;
 }
-function rectangle(start, state, dispatch) {
-  function drawRectangle(pos) {
+function rectangle(start: Position) {
+  function drawRectangle(pos: Position) {
     let xStart = Math.min(start.x, pos.x);
     let yStart = Math.min(start.y, pos.y);
     let xEnd = Math.max(start.x, pos.x);
@@ -192,10 +200,10 @@ function rectangle(start, state, dispatch) {
     let drawn = [];
     for (let y = yStart; y <= yEnd; y++) {
       for (let x = xStart; x <= xEnd; x++) {
-        drawn.push({ x, y, color: state.color });
+        drawn.push({ x, y });
       }
     }
-    dispatch({ picture: state.picture.draw(drawn) });
+    drawPixels(drawn);
   }
   drawRectangle(start);
   return drawRectangle;
@@ -207,9 +215,8 @@ const around = [
   { dx: 0, dy: 1 },
 ];
 
-function fill({ x, y }, state, dispatch) {
-  let targetColor = state.picture.pixel(x, y);
-  let drawn = [{ x, y, color: state.color }];
+function fill(pos: Position) {
+  let drawn = [pos];
   for (let done = 0; done < drawn.length; done++) {
     for (let { dx, dy } of around) {
       let x = drawn[done].x + dx,
@@ -219,21 +226,22 @@ function fill({ x, y }, state, dispatch) {
         x < state.picture.size &&
         y >= 0 &&
         y < state.picture.size &&
-        state.picture.pixel(x, y) == targetColor &&
+        getDrawnPixel({ x, y }) == color.value &&
         !drawn.some((p) => p.x == x && p.y == y)
       ) {
-        drawn.push({ x, y, color: state.color });
+        drawn.push({ x, y });
       }
     }
   }
-  dispatch({ picture: state.picture.draw(drawn) });
+  drawPixels(drawn);
 }
-function erase(pos, state, dispatch) {
-  function erasePixel({ x, y }, state) {
-    let drawn = { x, y, color: null };
-    dispatch({ picture: state.picture.draw([drawn]) });
+function erase(pos: Position) {
+  let drawn = [pos];
+  function erasePixel(pos: Position) {
+    drawn.push(pos);
+    drawPixels(drawn, true);
   }
-  erasePixel(pos, state);
+  drawPixels(drawn, true);
   return erasePixel;
 }
 const tools: Record<Tool, Function> = { draw, fill, rectangle, erase };
