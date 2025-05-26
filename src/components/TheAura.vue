@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs, reactive } from "vue";
+import { computed, ref, toRefs, reactive, onMounted } from "vue";
 
 type Tool = "draw" | "fill" | "rectangle" | "erase";
 type Orientation = "square" | "diamond";
@@ -19,6 +19,7 @@ const AURA_MAX_SIZE = 11;
 const props = defineProps<Props>();
 const { canvasSize } = toRefs(props);
 
+const grid = ref<boolean>(true);
 const tool = ref<Tool>("draw");
 const color = ref("#000000");
 const picture = reactive<Picture>({
@@ -179,6 +180,7 @@ function drawPixels(pixels: { x: number; y: number }[], erase = false) {
   for (let { x, y } of pixels) {
     picture.pixels[x + y * AURA_MAX_SIZE] = erase ? "" : color.value;
   }
+  drawAura();
   return;
 }
 
@@ -246,8 +248,52 @@ function erase(pos: Position) {
   return erasePixel;
 }
 const tools: Record<Tool, Function> = { draw, fill, rectangle, erase };
+function drawAura() {
+  if (!auraCanvas.value) return;
+  let canvas = auraCanvas.value;
+  if (!canvas) return;
+  let cx = canvas.getContext("2d");
+  if (!cx) return;
+  canvas.width = picture.size * scale.value;
+  canvas.height = picture.size * scale.value;
+  if (picture.orientation === "square") {
+    canvas.style.transform = "";
+    canvas.style.marginTop = `0`;
+    canvas.style.marginBottom = `0`;
+  } else if (picture.orientation === "diamond") {
+    canvas.style.transform = `rotate(45deg)`;
+    canvas.style.marginTop = `${(picture.size * scale.value) / 5}px`;
+    canvas.style.marginBottom = `${(picture.size * scale.value) / 5}px`;
+  }
+
+  for (let y = 0; y < picture.size; y++) {
+    for (let x = 0; x < picture.size; x++) {
+      if (!getDrawnPixel({ x, y })) continue;
+      cx.fillStyle = getDrawnPixel({ x, y });
+      cx.fillRect(x * scale.value, y * scale.value, scale.value, scale.value);
+    }
+  }
+
+  if (grid) {
+    for (let y = 0; y < picture.size; y++) {
+      cx.strokeStyle = "#181a1b";
+      cx.beginPath();
+      cx.moveTo(y * scale.value, 0);
+      cx.lineTo(y * scale.value, picture.size * scale.value);
+      cx.stroke();
+      cx.beginPath();
+      cx.moveTo(0, y * scale.value);
+      cx.lineTo(picture.size * scale.value, y * scale.value);
+      cx.stroke();
+    }
+  }
+}
+onMounted(() => {
+  drawAura();
+});
 </script>
 
 <template>
-  <canvas ref="auraCanvas" @mousedown="mouseDown"> </canvas>
+  <canvas ref="auraCanvas" @mousedown="mouseDown" @touchstart="touchStart">
+  </canvas>
 </template>
