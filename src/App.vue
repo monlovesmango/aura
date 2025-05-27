@@ -1,8 +1,22 @@
 <script setup lang="ts">
-import { ref, type Component } from "vue";
+import { useTemplateRef, onMounted, computed } from "vue";
 import TheAura from "./components/TheAura.vue";
+import type { Orientation, Tool } from "./components/TheAura.vue";
 
-const aura = ref<typeof TheAura | null>(null);
+// const aura = toRefs<Record<keyof TheAura, any> | null>(null);
+const aura = useTemplateRef("aura");
+
+const grid = computed(() => aura.value?.gridValue);
+const size = computed(() => aura.value?.sizeValue);
+const orientation = computed(() => aura.value?.orientationValue);
+const tool = computed(() => aura.value?.toolValue);
+const canUndo = computed(() => aura.value?.canUndo);
+onMounted(() => {
+  if (!aura.value) return;
+  aura?.value.pickColor("#666666");
+  aura?.value.colorValue;
+  return aura;
+});
 </script>
 
 <template>
@@ -12,65 +26,83 @@ const aura = ref<typeof TheAura | null>(null);
       <label>aura size:</label>
       <div id="aura-size-buttons">
         <button
-          v-for="size of Array.from({ length: 11 }, (_, i) => i + 1)"
+          v-for="s of Array.from({ length: 11 }, (_, i) => i + 1)"
           :class="
-            size === aura?.getSize()
+            s === size
               ? 'button button-small'
               : 'button button-small button-outline'
           "
+          @click="aura?.setSize(s)"
         >
-          {{ size + " x " + size }}
+          {{ s + " x " + s }}
         </button>
       </div>
       <label>aura orientation:</label>
       <div id="aura-orientation-buttons">
         <button
-          v-for="orientation of ['square', 'diamond']"
+          v-for="o of ['square', 'diamond'] as Orientation[]"
           :class="
-            orientation === aura?.getOrientation()
+            o === orientation
               ? 'button button-small'
               : 'button button-small button-outline'
           "
+          @click="aura?.setOrientation(o)"
         >
-          {{ orientation }}
+          {{ o }}
         </button>
       </div>
     </div>
     <TheAura ref="aura" :canvasSize="700" />
+    <div>{{ canUndo }}</div>
     <div id="aura-tools">
       <label>🖌 Tool:</label>
       <div>
-        <select id="aura-tool">
-          <option v-for="tool of Object.keys(aura?.getTools() || {})">
+        <select
+          id="aura-tool"
+          :value="tool"
+          @change="
+            (event: Event) => {
+              const target = event.target as HTMLInputElement;
+              if (!target.value) return;
+              aura?.pickTool(target.value as Tool);
+            }
+          "
+        >
+          <option v-for="tool of aura?.getTools() as Tool[]">
             {{ tool }}
           </option>
         </select>
       </div>
       <label>🎨 Color:</label>
       <div>
-        <input type="color" :value="aura?.getColor() || '#000000'" />
+        <input
+          type="color"
+          :value="aura?.color"
+          @change="
+            (event: Event) => {
+              const target = event.target as HTMLInputElement;
+              if (!target.value || !aura?.color) return;
+              aura?.pickColor(target.value);
+            }
+          "
+        />
       </div>
-      <button class="button button-outline">
-        {{ aura?.getGrid() ? "hide grid" : "show grid" }}
+      <button class="button button-outline" @click="aura?.toggleGrid()">
+        {{ grid ? "hide grid" : "show grid" }}
       </button>
     </div>
     <div id="aura-actions">
       <button
         class="button button-outline"
-        :disabled="aura?.canUndo() ? false : true"
+        :disabled="canUndo ? false : true"
+        @click.stop="aura?.undo()"
       >
         undo
       </button>
-      <button
-        class="button button-outline"
-        :disabled="aura?.canUndo() ? false : true"
-      >
+      <button class="button button-outline" :disabled="canUndo ? false : true">
         reset
       </button>
-      <button
-        class="button button-outline"
-        :disabled="aura?.canUndo() ? false : true"
-      >
+      <button class="button button-outline" :disabled="canUndo ? false : true">
         💾 save
       </button>
     </div>

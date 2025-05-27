@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, toRefs, reactive, onMounted } from "vue";
 
-type Tool = "draw" | "fill" | "rectangle" | "erase";
-type Orientation = "square" | "diamond";
+export type Tool = "draw" | "fill" | "rectangle" | "erase";
+export type Orientation = "square" | "diamond";
 type Picture = {
   orientation: Orientation;
   size: number;
@@ -27,15 +27,15 @@ const picture = reactive<Picture>({
   orientation: "square",
   pixels: new Array(AURA_MAX_SIZE * AURA_MAX_SIZE).fill(""),
 });
-const state: {
+const state = reactive<{
   picture: Picture;
   past: Picture[];
   updatedAt: number;
-} = {
+}>({
   picture: Object.assign(picture),
   past: [],
   updatedAt: Date.now(),
-};
+});
 
 const scale = computed(() =>
   Math.ceil(Math.sqrt(canvasSize.value ** 2 / 2) / picture.size),
@@ -44,20 +44,27 @@ const scale = computed(() =>
 const auraCanvas = ref<HTMLCanvasElement | null>(null);
 
 function updatePicture() {
+  console.log("updatePicture before", state);
+  state.past.unshift(Object.assign({}, state.picture));
   state.picture = Object.assign({}, picture);
-  state.past = [Object.assign({}, state.picture), ...state.past];
+  // state.past = [Object.assign({}, state.picture), ...state.past];
   state.updatedAt = Date.now();
+  drawAura();
+  console.log("updatePicture", state);
 }
-function lastPicture() {
+function undoPicture() {
   if (state.past.length == 0) return;
-  const lastPicture = state.past[0];
-  state.past = state.past.slice(1);
+  const lastPicture = state.past.shift();
+  if (!lastPicture) return;
+  state.picture = lastPicture;
   state.updatedAt = 0;
   if (lastPicture.size !== picture.size) picture.size = lastPicture.size;
   if (lastPicture.orientation !== picture.orientation)
     picture.orientation = lastPicture.orientation;
   if (lastPicture.pixels !== picture.pixels)
     picture.pixels = lastPicture.pixels;
+  drawAura();
+  console.log("undoPicture", state, picture, lastPicture);
 }
 function resetPicture() {
   picture.size = 10;
@@ -69,32 +76,37 @@ function pickTool(t: Tool) {
   if (t !== tool.value) tool.value = t;
 }
 function pickColor(c: string) {
-  if (/^#(?:[0-9a-fA-F]{3}){1,2}$/.test(c)) {
+  if (/^#(?:[0-9a-fA-F]{3}){1,2}$/.test(c) && c !== color.value) {
     color.value = c;
   }
 }
-function toggleGrid() {}
+function toggleGrid() {
+  grid.value = !grid.value;
+  drawAura();
+}
 function setSize(s: number) {
   if (s == picture.size) return;
   picture.size = Math.min(AURA_MAX_SIZE, Math.max(1, s));
   updatePicture();
 }
-function setOrientation() {
-  picture.orientation = picture.orientation == "square" ? "diamond" : "square";
+function setOrientation(orientation: Orientation) {
+  if (orientation === picture.orientation) return;
+  picture.orientation = orientation;
   updatePicture();
 }
 function undo() {
-  lastPicture();
+  undoPicture();
 }
 function reset() {
   resetPicture();
 }
-const getSize = computed(() => picture.size);
-const getOrientation = computed(() => picture.orientation);
-const getColor = computed(() => color.value);
-const getGrid = computed(() => grid.value);
+const sizeValue = computed(() => picture.size);
+const orientationValue = computed(() => picture.orientation);
+const colorValue = computed(() => color.value);
+const gridValue = computed(() => grid.value);
+const toolValue = computed(() => tool.value);
 function getTools() {
-  return tools;
+  return Object.keys(tools) as Tool[];
 }
 const canUndo = computed(() => state.past.length > 0);
 defineExpose({
@@ -105,10 +117,11 @@ defineExpose({
   setOrientation,
   undo,
   reset,
-  getSize,
-  getOrientation,
-  getColor,
-  getGrid,
+  sizeValue,
+  orientationValue,
+  colorValue,
+  gridValue,
+  toolValue,
   getTools,
   canUndo,
 });
@@ -122,6 +135,7 @@ function mouseDown(downEvent: MouseEvent) {
   let move = (moveEvent: MouseEvent) => {
     if (moveEvent.buttons == 0) {
       document.removeEventListener("mousemove", move);
+      updatePicture();
     } else {
       let newPos = pointerPosition(moveEvent);
       if (newPos.x == pos.x && newPos.y == pos.y) return;
@@ -146,6 +160,7 @@ function touchStart(startEvent: TouchEvent) {
   let end = () => {
     document.removeEventListener("touchmove", move);
     document.removeEventListener("touchend", end);
+    updatePicture();
   };
   document.addEventListener("touchmove", move);
   document.addEventListener("touchend", end);
@@ -287,7 +302,7 @@ function drawAura() {
     }
   }
 
-  if (grid) {
+  if (grid.value) {
     for (let y = 0; y < picture.size; y++) {
       cx.strokeStyle = "#181a1b";
       cx.beginPath();
@@ -309,4 +324,5 @@ onMounted(() => {
 <template>
   <canvas ref="auraCanvas" @mousedown="mouseDown" @touchstart="touchStart">
   </canvas>
+  <div>{{ canUndo }}</div>
 </template>
