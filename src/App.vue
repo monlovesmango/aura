@@ -76,11 +76,11 @@ onMounted(() => {
       <div>
         <input
           type="color"
-          :value="aura?.color"
+          :value="aura?.colorValue"
           @change="
             (event: Event) => {
               const target = event.target as HTMLInputElement;
-              if (!target.value || !aura?.color) return;
+              if (!target.value) return;
               aura?.pickColor(target.value);
             }
           "
