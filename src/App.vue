@@ -52,7 +52,6 @@ onMounted(() => {
       </div>
     </div>
     <TheAura ref="aura" :canvasSize="700" />
-    <div>{{ canUndo }}</div>
     <div id="aura-tools">
       <label>🖌 Tool:</label>
       <div>
@@ -105,7 +104,11 @@ onMounted(() => {
       >
         reset
       </button>
-      <button class="button button-outline" :disabled="canUndo ? false : true">
+      <button
+        class="button button-outline"
+        :disabled="canUndo ? false : true"
+        @click="aura?.save()"
+      >
         💾 save
       </button>
     </div>

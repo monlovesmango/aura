@@ -103,6 +103,58 @@ function undo() {
 function reset() {
   resetPicture();
 }
+function elt(
+  type: string,
+  attrs: Record<string, string | number> | null,
+  props?: Record<string, any>,
+) {
+  let dom = document.createElement(type);
+  if (attrs) {
+    for (let attr of Object.keys(attrs)) {
+      let attrValue =
+        typeof attrs[attr] != "string" ? attrs[attr].toString() : attrs[attr];
+      dom.setAttribute(attr, attrValue);
+    }
+  }
+  if (props) Object.assign(dom, props);
+  return dom;
+}
+function save() {
+  let svg = elt("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+  });
+  drawAuraSVG(picture, svg);
+  let link = elt("a", null, {
+    href: "data:text/plain;charset=utf-8," + encodeURIComponent(svg.outerHTML),
+    download: "aura.svg",
+  });
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+function drawAuraSVG(picture: Picture, svg: HTMLElement, scale = 10) {
+  let auraDiameter = Math.sqrt((picture.size * scale) ** 2 * 2);
+  let offset = (auraDiameter - picture.size * scale) / 2;
+  svg.setAttribute("width", auraDiameter.toString());
+  svg.setAttribute("height", auraDiameter.toString());
+  if (picture.orientation === "diamond") {
+    svg.style.transform = `rotate(45deg)`;
+  }
+
+  for (let y = 0; y < picture.size; y++) {
+    for (let x = 0; x < picture.size; x++) {
+      if (!getDrawnPixel({ x, y })) continue;
+      let pixelRect = elt("rect", {
+        x: x * scale + offset,
+        y: y * scale + offset,
+        width: scale,
+        height: scale,
+        fill: getDrawnPixel({ x, y }),
+      });
+      svg.appendChild(pixelRect);
+    }
+  }
+}
 const sizeValue = computed(() => picture.size);
 const orientationValue = computed(() => picture.orientation);
 const colorValue = computed(() => color.value);
@@ -120,6 +172,7 @@ defineExpose({
   setOrientation,
   undo,
   reset,
+  save,
   sizeValue,
   orientationValue,
   colorValue,
@@ -327,5 +380,4 @@ onMounted(() => {
 <template>
   <canvas ref="auraCanvas" @mousedown="mouseDown" @touchstart="touchStart">
   </canvas>
-  <div>{{ canUndo }}</div>
 </template>
