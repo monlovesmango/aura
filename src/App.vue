@@ -13,7 +13,6 @@ const tool = computed(() => aura.value?.toolValue);
 const canUndo = computed(() => aura.value?.canUndo);
 onMounted(() => {
   if (!aura.value) return;
-  aura?.value.pickColor("#666666");
   aura?.value.colorValue;
   return aura;
 });
@@ -95,11 +94,15 @@ onMounted(() => {
       <button
         class="button button-outline"
         :disabled="canUndo ? false : true"
-        @click.stop="aura?.undo()"
+        @click="aura?.undo()"
       >
         undo
       </button>
-      <button class="button button-outline" :disabled="canUndo ? false : true">
+      <button
+        class="button button-outline"
+        :disabled="canUndo ? false : true"
+        @click="aura?.reset()"
+      >
         reset
       </button>
       <button class="button button-outline" :disabled="canUndo ? false : true">

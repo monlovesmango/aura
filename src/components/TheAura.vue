@@ -32,7 +32,14 @@ const state = reactive<{
   past: Picture[];
   updatedAt: number;
 }>({
-  picture: Object.assign(picture),
+  picture: Object.assign(
+    {},
+    {
+      size: picture.size,
+      orientation: picture.orientation,
+      pixels: picture.pixels.slice(),
+    },
+  ),
   past: [],
   updatedAt: Date.now(),
 });
@@ -44,13 +51,10 @@ const scale = computed(() =>
 const auraCanvas = ref<HTMLCanvasElement | null>(null);
 
 function updatePicture() {
-  console.log("updatePicture before", state);
-  state.past.unshift(Object.assign({}, state.picture));
+  state.past = [Object.assign({}, state.picture), ...state.past];
   state.picture = Object.assign({}, picture);
-  // state.past = [Object.assign({}, state.picture), ...state.past];
   state.updatedAt = Date.now();
   drawAura();
-  console.log("updatePicture", state);
 }
 function undoPicture() {
   if (state.past.length == 0) return;
@@ -64,7 +68,6 @@ function undoPicture() {
   if (lastPicture.pixels !== picture.pixels)
     picture.pixels = lastPicture.pixels;
   drawAura();
-  console.log("undoPicture", state, picture, lastPicture);
 }
 function resetPicture() {
   picture.size = 10;
@@ -204,7 +207,7 @@ function getDrawnPixel(pos: Position) {
   return picture.pixels[pos.x + pos.y * AURA_MAX_SIZE];
 }
 function drawPixels(pixels: { x: number; y: number }[], erase = false) {
-  picture.pixels = state.picture.pixels;
+  picture.pixels = state.picture.pixels.slice();
   for (let { x, y } of pixels) {
     picture.pixels[x + y * AURA_MAX_SIZE] = erase ? "" : color.value;
   }
