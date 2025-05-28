@@ -160,6 +160,9 @@ const orientationValue = computed(() => picture.orientation);
 const colorValue = computed(() => color.value);
 const gridValue = computed(() => grid.value);
 const toolValue = computed(() => tool.value);
+function getPicture() {
+  return Object.assign({}, picture);
+}
 function getTools() {
   return Object.keys(tools) as Tool[];
 }
@@ -178,6 +181,7 @@ defineExpose({
   colorValue,
   gridValue,
   toolValue,
+  getPicture,
   getTools,
   canUndo,
 });
