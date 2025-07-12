@@ -191,7 +191,10 @@ function mouseDown(downEvent: MouseEvent) {
   if (downEvent.button != 0) return;
   let pos = pointerPosition(downEvent);
   let onMove = tools[tool.value](pos);
-  if (!onMove) return;
+  if (!onMove) {
+    updatePicture();
+    return;
+  }
   let move = (moveEvent: MouseEvent) => {
     if (moveEvent.buttons == 0) {
       document.removeEventListener("mousemove", move);
@@ -210,7 +213,10 @@ function touchStart(startEvent: TouchEvent) {
   let pos = pointerPosition(startEvent.touches[0]);
   let onMove = tools[tool.value](pos);
   startEvent.preventDefault();
-  if (!onMove) return;
+  if (!onMove) {
+    updatePicture();
+    return;
+  }
   let move = (moveEvent: TouchEvent) => {
     let newPos = pointerPosition(moveEvent.touches[0]);
     if (newPos.x == pos.x && newPos.y == pos.y) return;
@@ -307,6 +313,7 @@ const around = [
 ];
 
 function fill(pos: Position) {
+  let initColor = getDrawnPixel(pos);
   let drawn = [pos];
   for (let done = 0; done < drawn.length; done++) {
     for (let { dx, dy } of around) {
@@ -317,7 +324,7 @@ function fill(pos: Position) {
         x < state.picture.size &&
         y >= 0 &&
         y < state.picture.size &&
-        getDrawnPixel({ x, y }) == color.value &&
+        getDrawnPixel({ x, y }) == initColor &&
         !drawn.some((p) => p.x == x && p.y == y)
       ) {
         drawn.push({ x, y });
