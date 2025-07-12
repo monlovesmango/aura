@@ -272,6 +272,7 @@ function getDrawnPixel(pos: Position) {
 function drawPixels(pixels: { x: number; y: number }[], erase = false) {
   picture.pixels = state.picture.pixels.slice();
   for (let { x, y } of pixels) {
+    if (x > sizeValue.value || y > sizeValue.value) continue;
     picture.pixels[x + y * AURA_MAX_SIZE] = erase ? "" : color.value;
   }
   drawAura();
