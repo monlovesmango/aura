@@ -382,6 +382,44 @@ onMounted(() => {
 </script>
 
 <template>
-  <canvas ref="auraCanvas" @mousedown="mouseDown" @touchstart="touchStart">
+  <canvas
+    ref="auraCanvas"
+    id="aura-canvas"
+    @mousedown="mouseDown"
+    @touchstart="touchStart"
+  >
   </canvas>
 </template>
+<style lang="css" scoped>
+#aura-canvas {
+  /* display: block; */
+  object-fit: cover;
+  /* width: 500px;
+  max-width: 95vw; */
+  overflow: hidden;
+  /* flex-grow: 1; */
+  background-color: lightgrey;
+  background-image:
+    linear-gradient(
+      45deg,
+      darkgrey 25%,
+      transparent 25%,
+      transparent 75%,
+      darkgrey 75%,
+      darkgrey
+    ),
+    linear-gradient(
+      45deg,
+      darkgrey 25%,
+      transparent 25%,
+      transparent 75%,
+      darkgrey 75%,
+      darkgrey
+    );
+  background-size: 20px 20px;
+  background-position:
+    0px 0px,
+    30px 30px;
+  transition: all 0.5s ease-out;
+}
+</style>

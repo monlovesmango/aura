@@ -21,6 +21,7 @@ body {
   line-height: 1.5;
   margin: 0 2.5vw;
   background: var(--color-background);
+  color: slategrey;
 }
 h1,
 h2,
@@ -42,39 +43,29 @@ h3 {
 p {
   margin: 0 0 1rem;
 }
+select {
+}
+
+select {
+  color: lightgrey;
+  background: var(--color-background);
+  padding-right: 3rem;
+}
+
+select:focus {
+  background: var(--color-background);
+}
+
+select[multiple] {
+  background: none;
+  height: auto;
+}
+
 .aura-editor {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 5rem;
-}
-.aura-editor__canvas {
-  /* display: block; */
-  object-fit: cover;
-  /* width: 500px;
-  max-width: 95vw; */
-  overflow: hidden;
-  /* flex-grow: 1; */
-  background-color: lightgrey;
-  background-image: linear-gradient(
-      45deg,
-      darkgrey 25%,
-      transparent 25%,
-      transparent 75%,
-      darkgrey 75%,
-      darkgrey
-    ),
-    linear-gradient(
-      45deg,
-      darkgrey 25%,
-      transparent 25%,
-      transparent 75%,
-      darkgrey 75%,
-      darkgrey
-    );
-  background-size: 20px 20px;
-  background-position: 0px 0px, 30px 30px;
-  transition: all 0.5s ease-out;
 }
 .aura-editor__options {
   display: flex;
