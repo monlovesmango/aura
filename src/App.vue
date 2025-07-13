@@ -19,11 +19,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="aura-app">
+  <div id="aura__app">
     <h1>aura</h1>
-    <div id="aura-options">
-      <label>aura size:</label>
-      <div id="aura-size-buttons">
+    <div id="aura__options">
+      <label>aura options:</label>
+      <div id="aura__options-size">
         <button
           v-for="s of Array.from({ length: 11 }, (_, i) => i + 1)"
           :class="
@@ -36,8 +36,7 @@ onMounted(() => {
           {{ s + " x " + s }}
         </button>
       </div>
-      <label>aura orientation:</label>
-      <div id="aura-orientation-buttons">
+      <div>
         <button
           v-for="o of ['square', 'diamond'] as Orientation[]"
           :class="
@@ -50,13 +49,15 @@ onMounted(() => {
           {{ o }}
         </button>
       </div>
+      <button class="button button-outline" @click="aura?.toggleGrid()">
+        {{ grid ? "hide grid" : "show grid" }}
+      </button>
     </div>
     <TheAura ref="aura" :canvasSize="700" />
-    <div id="aura-tools">
+    <div id="aura__tools">
       <label>🖌 Tool:</label>
       <div>
         <select
-          id="aura-tool"
           :value="tool"
           @change="
             (event: Event) => {
@@ -71,6 +72,10 @@ onMounted(() => {
           </option>
         </select>
       </div>
+      <div />
+      <div />
+      <div />
+      <div />
       <label>🎨 Color:</label>
       <div>
         <input
@@ -85,11 +90,8 @@ onMounted(() => {
           "
         />
       </div>
-      <button class="button button-outline" @click="aura?.toggleGrid()">
-        {{ grid ? "hide grid" : "show grid" }}
-      </button>
     </div>
-    <div id="aura-actions">
+    <div id="aura__actions">
       <button
         class="button button-outline"
         :disabled="canUndo ? false : true"

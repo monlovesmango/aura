@@ -392,14 +392,14 @@ onMounted(() => {
 <template>
   <canvas
     ref="auraCanvas"
-    id="aura-canvas"
+    id="aura__canvas"
     @mousedown="mouseDown"
     @touchstart="touchStart"
   >
   </canvas>
 </template>
 <style lang="css" scoped>
-#aura-canvas {
+#aura__canvas {
   /* display: block; */
   object-fit: cover;
   /* width: 500px;
