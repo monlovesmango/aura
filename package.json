@@ -1,17 +1,28 @@
 {
-  "name": "aura",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@monlovesmango/aura",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
   },
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/aura.js",
+  "main": "./dist/aura.umd.cjs",
+  "exports": {
+    ".": {
+      "import": "./dist/aura.js",
+      "require": "./dist/aura.umd.cjs"
+    }
+  },
   "dependencies": {
     "vue": "^3.5.13"
   },
   "devDependencies": {
+    "@types/node": "^24.0.13",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vue/tsconfig": "^0.7.0",
     "typescript": "~5.8.3",
