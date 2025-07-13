@@ -9,6 +9,10 @@ type Picture = {
   pixels: string[];
 };
 type Position = { x: number; y: number };
+type Aura = {
+  orientation: Orientation;
+  pixels: string[];
+};
 
 interface Props {
   canvasSize: number;
@@ -160,8 +164,16 @@ const orientationValue = computed(() => picture.orientation);
 const colorValue = computed(() => color.value);
 const gridValue = computed(() => grid.value);
 const toolValue = computed(() => tool.value);
-function getPicture() {
-  return Object.assign({}, picture);
+function getAura() {
+  let aura: Aura = {
+    orientation: picture.orientation,
+    pixels: picture.pixels.filter((_color, index) => {
+      let row = Math.floor(index / AURA_MAX_SIZE);
+      let column = index % AURA_MAX_SIZE;
+      return row < picture.size && column < picture.size;
+    }),
+  };
+  return aura;
 }
 function getTools() {
   return Object.keys(tools) as Tool[];
@@ -181,7 +193,7 @@ defineExpose({
   colorValue,
   gridValue,
   toolValue,
-  getPicture,
+  getAura,
   getTools,
   canUndo,
 });
