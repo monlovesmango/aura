@@ -136,7 +136,7 @@ function save() {
   link.click();
   link.remove();
 }
-function drawAuraSVG(picture: Picture, svg: HTMLElement, scale = 10) {
+function drawAuraSVG(picture: Picture, svg: HTMLElement, scale = 100) {
   let auraDiameter = Math.sqrt((picture.size * scale) ** 2 * 2);
   let offset = (auraDiameter - picture.size * scale) / 2;
   svg.setAttribute("width", auraDiameter.toString());
@@ -151,8 +151,8 @@ function drawAuraSVG(picture: Picture, svg: HTMLElement, scale = 10) {
       let pixelRect = elt("rect", {
         x: x * scale + offset,
         y: y * scale + offset,
-        width: scale,
-        height: scale,
+        width: scale + 1,
+        height: scale + 1,
         fill: getDrawnPixel({ x, y }),
       });
       svg.appendChild(pixelRect);
