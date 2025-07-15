@@ -2,6 +2,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import dts from "vite-plugin-dts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -11,6 +12,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, "lib/main.ts"),
       name: "aura",
+      formats: ["es"],
       fileName: "aura",
     },
     rollupOptions: {
@@ -23,5 +25,8 @@ export default defineConfig({
       },
     },
   },
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    dts({ rollupTypes: true, tsconfigPath: "./tsconfig.app.json" }),
+  ],
 });
