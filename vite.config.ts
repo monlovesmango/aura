@@ -10,10 +10,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, "lib/main.ts"),
+      entry: resolve(__dirname, "src/index.ts"),
       name: "aura",
       formats: ["es"],
-      fileName: "aura",
+      fileName: (format) => `aura.${format}.js`,
     },
     rollupOptions: {
       // externalize deps
